@@ -1,0 +1,70 @@
+---
+title: "Kotzebue Phytoplankton Community Composition in September-October 2019"
+author: "Mariam Moreno"
+date: "13 May 2024"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+library(dplyr)
+library(ggplot2)
+library(readr)
+```
+
+
+### Aim 2: Enumerate and Identify Phytoplankton
+
+Null hypothesis: Each site will have a different dominant phytoplankton species.
+
+Alternative hypothesis: Both sites will have the same dominant phytoplankton species.
+
+The data is displayed as stacked barplots, one for each site. Different colors represent different phytoplanton identified from lagoon and shore samples from 2019. I anticipate to see each sample site to have a different phytoplankton species dominate the community composition given the differences in locations (the lagoon is closed off and the shore is coastal).
+I will use an ANOVA test to determine if both sites have different or the same dominant phytoplankton species.
+
+
+
+```{r}
+kotz_samples <- read.csv("kotz_samples.csv")
+
+kotz_samples
+```
+
+
+```{r}
+# stacked barplot of lagoon and shore counts
+kotz_community <- ggplot(kotz_samples, aes(fill=phytoplankton,y=counts, x=site))+ 
+  geom_bar(position="stack", stat="identity", colour="black")+ 
+  ggtitle("Phytoplankton Counts at Kotzebue Lagoon & Shore")
+
+kotz_community
+```
+
+
+
+```{r}
+# filter data by location
+lagoon <- data.frame(filter(kotz_samples, site=="Kotzebue Lagoon"))
+lagoon1 <- aggregate(counts~phytoplankton, data=lagoon,sum) 
+lagoon1
+
+# finding max of phytoplankton populations
+summary(lagoon1)
+
+shore <- data.frame(filter(kotz_samples, site=="Kotzebue Shore"))
+shore1 <- aggregate(counts~phytoplankton, data=shore,sum)
+shore1
+
+summary(shore1)
+```
+
+### ANOVA analysis
+```{r}
+two.way <- aov(counts~phytoplankton+site, data=kotz_samples)
+
+summary(two.way)
+```
+I reject my null hypothesis b/c of a very small (insignificant) p-value, and both sites have the same dominant phytoplankton species.
